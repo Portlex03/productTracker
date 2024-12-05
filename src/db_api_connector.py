@@ -39,26 +39,12 @@ class ProductsDBConnector(DBAPIConnector):
     prod_avail: str = "prod_avail"
     prod_store_id: str = "prod_store_id"
 
-    def update_shelf_status(self, prod_id: str, prod_store_id: int, prod_avail: bool) -> None:
-        response = (
-            self.supabase.table(self.table_name)
-            .update({"prod_avail": prod_avail})  
-            .eq("prod_id", prod_id)
-            .eq("prod_store_id", prod_store_id)  
-            .select()  
-            .execute()  
-        )
+    def insert_shelf_status(self, prod_id: str, prod_store_id: int, prod_avail: bool, prod_name: str) -> None:
+        record = {
+            self.prod_id: prod_id,
+            self.prod_store_id: prod_store_id,
+            self.prod_avail: prod_avail,
+            self.prod_name: prod_name,  
+        }
 
-        data = response.data
-        error = response.error
-
-        if error:
-            raise ValueError(f"Failed to update availability: {error['message']}")
-
-        # Если данных нет, значит, обновление не произошло
-        if not data:
-            raise ValueError("No data was updated.")
-
-
-
-
+        self.supabase.table(self.table_name).insert(record).execute()

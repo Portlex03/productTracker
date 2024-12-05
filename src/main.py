@@ -47,7 +47,6 @@ async def command_start_handler(message: Message) -> None:
         )
     )
 
-
 @dp.message(Command("products"))
 async def get_products_handler(message: Message) -> None:
 
@@ -58,7 +57,7 @@ async def get_products_handler(message: Message) -> None:
 
     for product in products:
         product_name = product["beautifulName"]
-        product_code = product["code"]  # Используем код продукта
+        product_code = product["code"] 
         keyboard = create_product_keyboard(product_code)
 
         await message.answer(text=f"Товар: {product_name}", reply_markup=keyboard)
@@ -67,31 +66,28 @@ async def get_products_handler(message: Message) -> None:
 @dp.callback_query(F.data.startswith("on_shelf"))
 async def handle_on_shelf(call: CallbackQuery) -> None:
     product_id = call.data.split(":")[-1]  
-    store: dict = stores_db_connector.get_store_data_from_chat_id(call.message.chat.id)
-    store_id = store["store_id"] 
-
-    try:
-        products_db_connector.update_shelf_status(
-            prod_id=product_id, prod_store_id=store_id, prod_avail=True
-        )
-        await call.answer("Товар отмечен как 'Есть на полке'.")
-    except Exception as e:
-        await call.answer(f"Ошибка обновления: {e}")
-
-@dp.callback_query(F.data.startswith("off_shelf"))
-async def handle_on_shelf(call: CallbackQuery) -> None:
-    product_id = call.data.split(":")[-1]  
-    store: dict = stores_db_connector.get_store_data_from_chat_id(call.message.chat.id)
+    store = stores_db_connector.get_store_data_from_chat_id(call.message.chat.id)
     store_id = store["store_id"]  
 
-    try:
-        products_db_connector.update_shelf_status(
-            prod_id=product_id, prod_store_id=store_id, prod_avail=False
-        )
-        await call.answer("Товар отмечен как 'Есть на полке'.")
-    except Exception as e:
-        await call.answer(f"Ошибка обновления: {e}")
+    products_db_connector.insert_shelf_status(
+        prod_id=product_id,
+        prod_store_id=store_id,
+        prod_avail=True
+    )
+    await call.answer("Информация о товаре записана: 'Есть на полке'.")
 
+@dp.callback_query(F.data.startswith("off_shelf"))
+async def handle_off_shelf(call: CallbackQuery) -> None:
+    product_id = call.data.split(":")[-1]  
+    store = stores_db_connector.get_store_data_from_chat_id(call.message.chat.id)
+    store_id = store["store_id"] 
+
+    products_db_connector.insert_shelf_status(
+        prod_id=product_id,
+        prod_store_id=store_id,
+        prod_avail=False
+    )
+    await call.answer("Информация о товаре записана: 'Нет на полке'.")
 
 async def main() -> None:
 

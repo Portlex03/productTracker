@@ -4,6 +4,7 @@ STORES_TABLE_NAME = "stores"
 
 PRODUCTS_TABLE_NAME = "products_tracking"
 
+
 class DBAPIConnector:
     supabase: Client
 
@@ -30,7 +31,8 @@ class StoresDBConnector(DBAPIConnector):
         response_data: list[dict] = response.data
         store: dict = response_data[0]
         return store
-    
+
+
 class ProductsDBConnector(DBAPIConnector):
     table_name: str = PRODUCTS_TABLE_NAME
 
@@ -39,12 +41,14 @@ class ProductsDBConnector(DBAPIConnector):
     prod_avail: str = "prod_avail"
     prod_store_id: str = "prod_store_id"
 
-    def insert_shelf_status(self, prod_id: str, prod_store_id: int, prod_avail: bool, prod_name: str) -> None:
+    def insert_shelf_status(
+        self, prod_id: str, prod_store_id: int, prod_avail: bool, prod_name: str
+    ) -> None:
         record = {
             self.prod_id: prod_id,
             self.prod_store_id: prod_store_id,
             self.prod_avail: prod_avail,
-            self.prod_name: prod_name,  
+            self.prod_name: prod_name,
         }
 
         self.supabase.table(self.table_name).insert(record).execute()

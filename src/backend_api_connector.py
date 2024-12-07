@@ -6,7 +6,6 @@ STORES_API_URL = "https://www.parfum-lider.ru/upload/bot/map.json"
 
 
 def get_products(token: str, store_id: int, count_items: int) -> list[dict]:
-    """Returns a list of products dictionaries from store"""
     response = requests.get(
         url=PRODUCTS_API_URL,
         params={"store": store_id, "count_items": count_items},

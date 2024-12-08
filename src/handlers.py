@@ -68,3 +68,8 @@ async def handle_off_shelf(call: CallbackQuery) -> None:
         prod_id=product_id, prod_store_id=store_id, prod_avail=False
     )
     await call.answer("Информация о товаре записана: 'Нет на полке'.")
+
+
+@router.callback_query(F.data.startswith("add_photo"))
+async def photo_addition_handler(call: CallbackQuery) -> None:
+    pass

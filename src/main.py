@@ -6,7 +6,8 @@ from os import getenv
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 
-from handlers import stores_db_connector, products_db_connector, router
+from db_api_connector import stores_db_connector, products_db_connector
+from handlers import router
 
 load_dotenv()
 

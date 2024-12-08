@@ -1,12 +1,12 @@
 from os import getenv
 
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.filters import Command
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from dotenv import load_dotenv
 
 from backend_api_connector import get_products
-from db_api_connector import StoresDBConnector, ProductsDBConnector
+from db_api_connector import products_db_connector, stores_db_connector
 from keyboards import create_product_keyboard
 
 load_dotenv()
@@ -14,10 +14,6 @@ load_dotenv()
 PRODUCTS_API_TOKEN: str = getenv("PRODUCTS_API_TOKEN")
 
 router = Router()
-
-stores_db_connector = StoresDBConnector()
-products_db_connector = ProductsDBConnector()
-
 
 @router.message(Command("start"))
 async def command_start_handler(message: Message) -> None:
@@ -47,7 +43,7 @@ async def get_products_handler(message: Message) -> None:
 
 
 @router.callback_query(F.data.startswith("on_shelf"))
-async def handle_on_shelf(call: CallbackQuery) -> None:
+async def on_shelf_handler(call: CallbackQuery) -> None:
     product_id = call.data.split(":")[-1]
     store = stores_db_connector.get_store_data_from_chat_id(call.message.chat.id)
     store_id = store["store_id"]
@@ -59,7 +55,7 @@ async def handle_on_shelf(call: CallbackQuery) -> None:
 
 
 @router.callback_query(F.data.startswith("off_shelf"))
-async def handle_off_shelf(call: CallbackQuery) -> None:
+async def off_shelf_handler(call: CallbackQuery) -> None:
     product_id = call.data.split(":")[-1]
     store = stores_db_connector.get_store_data_from_chat_id(call.message.chat.id)
     store_id = store["store_id"]

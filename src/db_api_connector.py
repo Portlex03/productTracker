@@ -52,3 +52,6 @@ class ProductsDBConnector(DBAPIConnector):
         }
 
         self.supabase.table(self.table_name).insert(record).execute()
+
+stores_db_connector = StoresDBConnector()
+products_db_connector = ProductsDBConnector()

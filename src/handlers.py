@@ -1,13 +1,17 @@
+import io
 from os import getenv
 
 from aiogram import F, Router
 from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from dotenv import load_dotenv
 
 from backend_api_connector import get_products
+from storage_connector import storage_connector
 from db_api_connector import products_db_connector, stores_db_connector
 from keyboards import create_product_keyboard
+from states import AddPhotoState
 
 load_dotenv()
 
@@ -67,5 +71,25 @@ async def off_shelf_handler(call: CallbackQuery) -> None:
 
 
 @router.callback_query(F.data.startswith("add_photo"))
-async def photo_addition_handler(call: CallbackQuery) -> None:
-    pass
+async def photo_addition_handler(call: CallbackQuery, state: FSMContext) -> None:
+    product_id: str = call.data.split(":")[-1]
+    product_name: str = call.message.text.split(": ")[-1]
+
+    await state.set_state(AddPhotoState.product_id)
+    await state.update_data(product_id=product_id)
+
+    await call.message.answer(f"Загрузите фото товара: {product_name}")
+    await state.set_state(AddPhotoState.upload_photo)
+
+
+@router.message(AddPhotoState.upload_photo, F.photo)
+async def get_photo_handler(message: Message, state: FSMContext) -> None:
+    user_data: dict = await state.get_data()
+    file_bytes: io.BytesIO = await message.bot.download(message.photo[-1])
+
+    storage_connector.upload_product_photo(
+        file_bytes, product_id=user_data["product_id"]
+    )
+
+    await message.answer("Фото загружено успешно!")
+    await state.clear()

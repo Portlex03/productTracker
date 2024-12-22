@@ -20,7 +20,7 @@ async def command_start_handler(message: Message) -> None:
     store = stores_db_connector.get_store_data_from_chat_id(message.chat.id)
     await message.answer(
         "Бот подключился успешно!\nНаименование магазина: {}".format(
-            store["store_name"]
+            store["name"]
         )
     )
 
@@ -30,8 +30,8 @@ async def get_products_handler(message: Message) -> None:
     store: dict = stores_db_connector.get_store_data_from_chat_id(message.chat.id)
     products: list[dict] = get_products(
         token=PRODUCTS_API_TOKEN,
-        store_id=store["store_id"],
-        count_items=store["store_count_items"],
+        store_id=int(store["code"]),
+        count_items=store["check_items_count"],
     )
 
     for product in products:

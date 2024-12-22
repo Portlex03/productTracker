@@ -1,39 +1,32 @@
 from supabase import create_client, Client
 
-STORES_TABLE_NAME = "stores"
+STORES_TABLE_NAME = "ParfumLeaderStores"
 
-PRODUCTS_TABLE_NAME = "products_tracking"
+PRODUCTS_TABLE_NAME = "ProductsTracking"
 
 
-class DBAPIConnector:
+class Connector:
     supabase: Client
 
     def connect(self, supabase_url: str, supabase_key: str) -> None:
         self.supabase = create_client(supabase_url, supabase_key)
 
 
-class StoresDBConnector(DBAPIConnector):
-    table_name: str = STORES_TABLE_NAME
-
-    store_id: str = "store_id"
-
-    store_name: str = "store_name"
-
-    store_chat_id: str = "store_chat_id"
-
+class StoresDBConnector(Connector):
     def get_store_data_from_chat_id(self, chat_id: int) -> dict:
         response = (
-            self.supabase.table(self.table_name)
+            self.supabase
+            .table(STORES_TABLE_NAME)
             .select("*")
-            .eq(self.store_chat_id, chat_id)
+            .eq("chat", chat_id)
             .execute()
         )
         response_data: list[dict] = response.data
-        store: dict = response_data[0]
+        store: dict = response_data[-1]
         return store
 
 
-class ProductsDBConnector(DBAPIConnector):
+class ProductsDBConnector(Connector):
     table_name: str = PRODUCTS_TABLE_NAME
 
     prod_id: str = "prod_id"

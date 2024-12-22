@@ -1,8 +1,8 @@
 from supabase import create_client, Client
 
-STORES_TABLE_NAME = "stores"
+STORES_TABLE_NAME = "ParfumLeaderStores"
 
-PRODUCTS_TABLE_NAME = "products_tracking"
+PRODUCTS_TABLE_NAME = "ProductsTracking"
 
 
 class Connector:
@@ -19,23 +19,16 @@ class Connector:
 
 
 class StoresDBConnector(Connector):
-    table_name: str = STORES_TABLE_NAME
-
-    store_id: str = "store_id"
-
-    store_name: str = "store_name"
-
-    store_chat_id: str = "store_chat_id"
-
     def get_store_data_from_chat_id(self, chat_id: int) -> dict:
         response = (
-            self.supabase.table(self.table_name)
+            self.supabase
+            .table(STORES_TABLE_NAME)
             .select("*")
-            .eq(self.store_chat_id, chat_id)
+            .eq("chat", chat_id)
             .execute()
         )
         response_data: list[dict] = response.data
-        store: dict = response_data[0]
+        store: dict = response_data[-1]
         return store
 
 

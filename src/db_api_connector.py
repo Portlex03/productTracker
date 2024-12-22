@@ -8,8 +8,14 @@ PRODUCTS_TABLE_NAME = "ProductsTracking"
 class Connector:
     supabase: Client
 
-    def connect(self, supabase_url: str, supabase_key: str) -> None:
+    def connect(
+        self, supabase_url: str, supabase_key: str, user_email: str, user_password: str
+    ) -> None:
         self.supabase = create_client(supabase_url, supabase_key)
+
+        self.supabase.auth.sign_in_with_password(
+            {"email": user_email, "password": user_password}
+        )
 
 
 class StoresDBConnector(Connector):
@@ -45,6 +51,7 @@ class ProductsDBConnector(Connector):
         }
 
         self.supabase.table(self.table_name).insert(record).execute()
+
 
 stores_db_connector = StoresDBConnector()
 products_db_connector = ProductsDBConnector()

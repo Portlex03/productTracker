@@ -3,7 +3,7 @@ import io
 from db_api_connector import Connector
 
 
-STORAGE_NAME = "products_photo"
+STORAGE_NAME = "ProductsPhoto"
 
 
 class StorageConnector(Connector):

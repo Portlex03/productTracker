@@ -8,12 +8,20 @@ from dotenv import load_dotenv
 
 from db_api_connector import stores_db_connector, products_db_connector
 from handlers import router
+from storage_connector import storage_connector
 
 load_dotenv()
 
 BOT_TOKEN: str = getenv("BOT_TOKEN")
 
-DB_CONNECTION_PARAMS: tuple[str, str] = getenv("SUPABASE_URL"), getenv("SUPABASE_KEY")
+DB_CONNECTION_PARAMS: tuple[str] = (
+    getenv("SUPABASE_URL"),
+    getenv("SUPABASE_KEY"),
+    getenv("USER_EMAIL"),
+    getenv("USER_PASSWORD")
+)
+
+connectors = (storage_connector, stores_db_connector, products_db_connector)
 
 
 async def main() -> None:
@@ -22,8 +30,8 @@ async def main() -> None:
 
     dp.include_router(router)
 
-    stores_db_connector.connect(*DB_CONNECTION_PARAMS)
-    products_db_connector.connect(*DB_CONNECTION_PARAMS)
+    for connector in connectors:
+        connector.connect(*DB_CONNECTION_PARAMS)
 
     await dp.start_polling(bot)
 

@@ -1,5 +1,6 @@
 import io
 from os import getenv
+from uuid import uuid4
 
 from aiogram import F, Router
 from aiogram.filters import Command
@@ -39,35 +40,37 @@ async def get_products_handler(message: Message) -> None:
     )
 
     for product in products:
+        product_id = uuid4()
         product_name = product["beautifulName"]
-        product_code = product["code"]
-        keyboard = create_product_keyboard(product_code)
+        keyboard = create_product_keyboard(product_id)
 
         await message.answer(text=f"Товар: {product_name}", reply_markup=keyboard)
 
 
 @router.callback_query(F.data.startswith("on_shelf"))
 async def on_shelf_handler(call: CallbackQuery) -> None:
-    product_id = call.data.split(":")[-1]
+    prod_id = call.data.split(":")[-1]
+    prod_name = call.message.text.split(": ")[-1]
     store = stores_db_connector.get_store_data_from_chat_id(call.message.chat.id)
-    store_id = store["store_id"]
+    store_code = store["code"]
 
-    products_db_connector.insert_shelf_status(
-        prod_id=product_id, prod_store_id=store_id, prod_avail=True
+    products_db_connector.insert_product(
+        prod_id=prod_id, prod_name=prod_name, prod_avail=True, prod_store_code=store_code
     )
-    await call.answer("Информация о товаре записана: 'Есть на полке'.")
+    await call.message.answer(f"Товар: {prod_name}.\nОтметка: Есть на полке")
 
 
 @router.callback_query(F.data.startswith("off_shelf"))
 async def off_shelf_handler(call: CallbackQuery) -> None:
-    product_id = call.data.split(":")[-1]
+    prod_id = call.data.split(":")[-1]
+    prod_name = call.message.text.split(": ")[-1]
     store = stores_db_connector.get_store_data_from_chat_id(call.message.chat.id)
-    store_id = store["store_id"]
+    store_code = store["code"]
 
-    products_db_connector.insert_shelf_status(
-        prod_id=product_id, prod_store_id=store_id, prod_avail=False
+    products_db_connector.insert_product(
+        prod_id=prod_id, prod_name=prod_name, prod_avail=True, prod_store_code=store_code
     )
-    await call.answer("Информация о товаре записана: 'Нет на полке'.")
+    await call.message.answer(f"Товар: {prod_name}.\nОтметка: Нет на полке")
 
 
 @router.callback_query(F.data.startswith("add_photo"))

@@ -1,37 +1,25 @@
 import asyncio
 import logging
 import sys
-from os import getenv
 
 from aiogram import Bot, Dispatcher
-from dotenv import load_dotenv
 
-from db_api_connector import stores_db_connector, products_db_connector
-from handlers import router
-from storage_connector import storage_connector
+from config import AppSettings
+from database import connect2db_from_settings
+from handlers import routers
 
-load_dotenv()
-
-BOT_TOKEN: str = getenv("BOT_TOKEN")
-
-DB_CONNECTION_PARAMS: tuple[str] = (
-    getenv("SUPABASE_URL"),
-    getenv("SUPABASE_KEY"),
-    getenv("USER_EMAIL"),
-    getenv("USER_PASSWORD")
-)
-
-connectors = (storage_connector, stores_db_connector, products_db_connector)
+app_settings = AppSettings()
 
 
 async def main() -> None:
+    bot = Bot(token=app_settings.bot_token)
+
     dp = Dispatcher()
-    bot = Bot(token=BOT_TOKEN)
+    dp.include_routers(*routers)
 
-    dp.include_router(router)
+    connect2db_from_settings(app_settings)
 
-    for connector in connectors:
-        connector.connect(*DB_CONNECTION_PARAMS)
+    await bot.delete_webhook(drop_pending_updates=True)
 
     await dp.start_polling(bot)
 

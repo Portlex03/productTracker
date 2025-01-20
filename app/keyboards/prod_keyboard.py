@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
-def create_product_keyboard(product_id: int) -> InlineKeyboardMarkup:
+def products_keyboard(product_id: int) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [

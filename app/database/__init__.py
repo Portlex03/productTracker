@@ -2,7 +2,7 @@ from supabase import Client, create_client
 
 from ..config import AppSettings
 from .products import ProductsTable
-from .storage import Storage
+from .storage import FileStorage
 from .stores import StoresTable
 
 STORES_TABLE_NAME = "Stores"
@@ -11,10 +11,10 @@ PRODUCTS_TABLE_NAME = "Products"
 
 STORAGE_NAME = "ProductsPhoto"
 
-tables = (stores_table, products_table, storage_table) = (
+tables = (stores_table, products_table, file_storage) = (
     StoresTable(STORES_TABLE_NAME),
     ProductsTable(PRODUCTS_TABLE_NAME),
-    Storage(STORAGE_NAME),
+    FileStorage(STORAGE_NAME),
 )
 
 

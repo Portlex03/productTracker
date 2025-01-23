@@ -9,7 +9,7 @@ from aiogram.types import CallbackQuery, Message
 import dotenv
 
 from ..api.perfume_backend import get_products_request
-from ..database import stores_table, products_table, storage_table
+from ..database import stores_table, products_table, file_storage
 from ..keyboards.prod_keyboard import products_keyboard
 from ..states.state import AddPhotoState
 
@@ -80,7 +80,7 @@ async def get_photo_handler(message: Message, state: FSMContext) -> None:
     user_data: dict = await state.get_data()
     file_bytes: io.BytesIO = await message.bot.download(message.photo[-1])
 
-    storage_table.upload_product_photo(
+    file_storage.upload_product_photo(
         file_bytes, product_id=user_data["product_id"]
     )
 

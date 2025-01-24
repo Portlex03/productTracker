@@ -4,11 +4,9 @@ import sys
 
 from aiogram import Bot, Dispatcher
 
-from .config import AppSettings
+from .config import app_settings
 from .database import connect2db_from_settings
 from .handlers import routers
-
-app_settings = AppSettings()
 
 
 async def main() -> None:
@@ -20,7 +18,6 @@ async def main() -> None:
     connect2db_from_settings(app_settings)
 
     await bot.delete_webhook(drop_pending_updates=True)
-
     await dp.start_polling(bot)
 
 

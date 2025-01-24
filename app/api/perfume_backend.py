@@ -16,13 +16,26 @@ def get_products_request(
     headers = {"Authorization": token}
 
     response = requests.get(url=PRODUCTS_API_URL, params=params, headers=headers)
-    response_json: list | dict = response.json()
+    if response.status_code != 200:
+        raise Exception(f"Bad request. Status code {response.status_code}.")
 
+    response_json: list | dict = response.json()
     if isinstance(response_json, dict):
         raise ValueError(response_json["error"])
 
-    responce_data: str | list[dict] = response_json[0]["data"]
-    if isinstance(responce_data, str):
+    response_data: str | list[dict] = response_json[0]["data"]
+    if isinstance(response_data, str):
         raise ValueError(f"Store with ID {store_id} not found.")
 
-    return responce_data
+    return response_data
+
+
+def get_products_request_mock(
+    token: str, store_id: int, count_items: Annotated[int, Field(gt=0, lt=1000)]
+) -> list[dict]:
+    products = [
+        {"beautifulName": "Шампунь"},
+        {"beautifulName": "Гель для душа"},
+        {"beautifulName": "Мыло для рук"},
+    ]
+    return products

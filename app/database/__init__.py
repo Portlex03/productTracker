@@ -18,7 +18,7 @@ tables = (stores_table, products_table, file_storage) = (
 )
 
 
-def connect2db_from_settings(settings: AppSettings) -> None:
+def connect2db_with_settings(settings: AppSettings) -> None:
     supabase: Client = create_client(settings.supabase_url, settings.supabase_key)
     supabase.auth.sign_in_with_password(
         {"email": settings.user_email, "password": settings.user_password}

@@ -38,7 +38,7 @@ async def on_shelf_handler(call: CallbackQuery) -> None:
         "prod_name": call.message.text.split(": ")[-1],
         "prod_avail": call_data[1] == "on_shelf",
         "prod_store_code": store["code"],
-        "prod_employee": call.from_user.username
+        "prod_employee_name": call.from_user.full_name
     }
     products_table.insert_product(product)
     await call.message.answer(

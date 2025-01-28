@@ -38,6 +38,7 @@ async def on_shelf_handler(call: CallbackQuery) -> None:
         "prod_name": call.message.text.split(": ")[-1],
         "prod_avail": call_data[1] == "on_shelf",
         "prod_store_code": store["code"],
+        "prod_employee": call.from_user.username
     }
     products_table.insert_product(product)
     await call.message.answer(
@@ -50,7 +51,7 @@ async def on_shelf_handler(call: CallbackQuery) -> None:
 
 @router.callback_query(F.data.startswith("add_photo"))
 async def photo_addition_handler(call: CallbackQuery, state: FSMContext) -> None:
-    product_id: str = call.data.split(":")[-1]
+    product_id: str = call.data.split(".")[-1]
     product_name: str = call.message.text.split(": ")[-1]
 
     await state.set_state(AddPhotoState.product_id)

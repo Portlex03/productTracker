@@ -1,3 +1,5 @@
+import random
+
 from .base_table import Table
 
 
@@ -15,16 +17,18 @@ class StoresTable(Table):
         store: dict = response_data[-1]
         return store
 
-    def insert_store_with_temp_code(self, chat_id: int) -> None:
+    def insert_store_with_temp_code(self, chat_id: int) -> dict:
         response = self.table.select("*").execute()
-        new_store: dict = response.data[-1]
-        new_store.update(
-            {
-                "id": new_store["id"] + 1,
-                "name": "TempStore",
-                "chat": chat_id,
-                "code": "0" + new_store["code"],
-            }
-        )
+        max_id = max(store["id"] for store in response.data)
+
+        new_store: dict = random.sample(response.data, k=1)[0]
+        changed_data = {
+            "id": max_id + 1,
+            "name": "TempStore",
+            "chat": chat_id,
+            "code": "0" + new_store["code"],
+        }
+        new_store.update(changed_data)
+
         response = self.table.insert(new_store).execute()
-        assert len(response.data) > 0
+        return response.data[-1]

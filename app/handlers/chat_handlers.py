@@ -1,17 +1,24 @@
 from aiogram import Router
-from aiogram.types import Message
 from aiogram.filters.command import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
 
 from ..database import stores_table
+from ..states.app_states import AppState
 
 router = Router()
 
+
 @router.message(Command("start"))
-async def start_handler(message: Message) -> None:
-    await message.answer("Бот запущен.")
+async def start_handler(message: Message, state: FSMContext) -> None:
     try:
-        stores_table.get_store_data_from_chat_id(message.chat.id)
-        await message.answer("Ваш чат успешно авторизован в базе данных!")
+        chat_store = stores_table.get_store_data_from_chat_id(message.chat.id)
+        message_text = "Бот запущен и готов к работе, ваш чат авторизован"
     except ValueError:
-        stores_table.insert_store_with_temp_code(message.chat.id)
-        await message.answer("Чат не зарегистрирован в базе данных. Вам была выдана временная регистрация.")
+        chat_store = stores_table.insert_store_with_temp_code(message.chat.id)
+        message_text = "Бот запущен и готов к работе, ваш чат временно авторизован"
+
+    await state.set_state(AppState.chat_store)
+    await state.update_data(chat_store=chat_store)
+
+    await message.answer(message_text)

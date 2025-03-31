@@ -2,7 +2,7 @@ from aiogram.fsm.state import State, StatesGroup
 
 
 class AppState(StatesGroup):
-    chat_store = State()
+    store_data = State()
     last_prod_list = State()
 
 

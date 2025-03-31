@@ -1,27 +1,21 @@
 from supabase import Client, create_client
 
 from ..config import AppSettings
-from .products import ProductsTable
-from .storage import FileStorage
-from .stores import StoresTable
+from .products_available import ProductsAvailable
+from .products import Products
+from .stores import Stores
 
-STORES_TABLE_NAME = "Stores"
-
-PRODUCTS_TABLE_NAME = "Products"
-
-STORAGE_NAME = "ProductsPhoto"
-
-tables = (stores_table, products_table, file_storage) = (
-    StoresTable(STORES_TABLE_NAME),
-    ProductsTable(PRODUCTS_TABLE_NAME),
-    FileStorage(STORAGE_NAME),
+tables = (stores_table, products_available_table, products_table) = (
+    Stores(),
+    ProductsAvailable(),
+    Products(),
 )
 
 
 def connect2db_with_settings(settings: AppSettings) -> None:
-    supabase: Client = create_client(settings.supabase_url, settings.supabase_key)
-    supabase.auth.sign_in_with_password(
+    client: Client = create_client(settings.supabase_url, settings.supabase_key)
+    client.auth.sign_in_with_password(
         {"email": settings.user_email, "password": settings.user_password}
     )
     for table in tables:
-        table.connect2db(supabase)
+        table.client = client

@@ -3,7 +3,7 @@ import random
 from .base_table import Table
 
 
-class StoresTable(Table):
+class Stores(Table):
     def get_store_data_from_chat_id(self, chat_id: int) -> dict:
         response = self.table.select("*").eq("chat", chat_id).execute()
         response_data: list[dict] = response.data

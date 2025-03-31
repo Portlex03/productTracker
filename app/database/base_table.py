@@ -2,12 +2,9 @@ from supabase import Client
 
 
 class Table:
-    def __init__(self, table_name: str) -> None:
-        self.table_name = table_name
+    def __init__(self) -> None:
+        self.table_name = self.__class__.__name__
         self.client: Client | None = None
-
-    def connect2db(self, client: Client) -> None:
-        self.client = client
 
     @property
     def table(self):

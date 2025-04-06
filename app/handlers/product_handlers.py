@@ -1,6 +1,7 @@
 import time
 
 from aiogram import Bot, F, Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.command import Command
 from aiogram.types import CallbackQuery, Message
@@ -15,32 +16,44 @@ from ..states.app_states import AppState
 router = Router()
 
 
-@router.message(Command("_p"))
-async def send_prod_list_to_chat_handler(message: Message, state: FSMContext) -> None:
+@router.message(Command("p"))
+async def send_prod_list_to_chat_handler(message: Message, state: FSMContext, bot: Bot) -> None:
     await state.set_state(AppState.store_data)
     store_data: dict = await state.get_value("store_data")
 
+    prod_count = store_data["prod_count"]
     products: list[dict] = get_products_request(
         token=app_settings.perfume_backend_api_token,
         store_id=store_data["code"],
-        count_items=store_data["prod_count"],
+        count_items=prod_count,
     )
 
     products_table.insert_products(products)
 
     last_prod_list = []
-    for product in products:
-        sent_message = await message.answer(
-            text="Товар: {}".format(product["beautifulName"]),
-            reply_markup=products_keyboard(),
-        )
+    for i, product in enumerate(products):
+        try:
+            sent_message = await message.answer_photo(
+                photo=product["photo"],
+                caption="Товар [{}/{}]: {}".format(
+                    i + 1, prod_count, product["beautifulName"]
+                ),
+                reply_markup=products_keyboard(),
+            )
+        except TelegramBadRequest:
+            sent_message = await message.answer(
+                text="Товар [{}/{}]: {}".format(
+                    i + 1, prod_count, product["beautifulName"]
+                ),
+                reply_markup=products_keyboard(),
+            )
         last_prod_list.append(sent_message.message_id)
         time.sleep(1)
 
     await state.update_data(last_prod_list=last_prod_list)
 
 
-@router.message(Command("_d"))
+@router.message(Command("d"))
 async def delete_last_prod_list_handler(
     message: Message, state: FSMContext, bot: Bot
 ) -> None:
@@ -56,7 +69,8 @@ async def delete_last_prod_list_handler(
 
 @router.callback_query(F.data.startswith("kb.prod_avail"))
 async def on_shelf_handler(call: CallbackQuery, state: FSMContext, bot: Bot) -> None:
-    prod_name = call.message.text.split(": ")[-1]
+    call_text = call.message.text or call.message.caption
+    prod_num, prod_name = call_text.split(": ")
     prod_id = products_table.get_product_id_by_name(prod_name)
     prod_avail = True if call.data.split(".")[-1] == "true" else False
 
@@ -72,8 +86,8 @@ async def on_shelf_handler(call: CallbackQuery, state: FSMContext, bot: Bot) -> 
     products_available_table.insert_product_avail(product)
 
     prod_status = "Есть на полке" if prod_avail else "Нет на полке"
-    message = "Товар '{}' отмечен успешно.\nСтатус: {}"
-    await call.answer(message.format(prod_name, prod_status))
+    message = "{}: '{}' отмечен успешно.\nСтатус: {}"
+    await call.answer(message.format(prod_num, prod_name, prod_status))
 
     await bot.delete_message(
         chat_id=call.message.chat.id, message_id=call.message.message_id

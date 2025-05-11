@@ -8,7 +8,6 @@ class Products(Table):
 
     def get_product_id_by_name(self, prod_name: str) -> str:
         response = self.table.select("id").eq("beautifulName", prod_name).execute()
-        print(response.data, prod_name)
         prod_id = response.data[0]["id"]
         return prod_id
 
